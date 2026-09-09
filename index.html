@@ -928,6 +928,7 @@
       const DEFAULT_REACTION_HIGHLIGHT_X_OFFSET = 0;
       const DEFAULT_REACTION_HIGHLIGHT_Y_OFFSET = 0;
       const DEFAULT_REACTION_HIGHLIGHT_DISTRIBUTE_CAMERAS = false;
+      const DEFAULT_REACTION_HIGHLIGHT_SIDE_CAMERAS_SIZE = 15;
 
       const CELL_ASPECT_RATIO = 16 / 9;
       const REACTION_CAMERA_CROP_RATIO = 0; 
@@ -1695,13 +1696,13 @@
       }
 
       
-      function createSliderWithNumberInput(idPrefix, labelKey, min, max, step, value, configId, propertyName) {
+      function createSliderWithNumberInput(idPrefix, labelKey, min, max, step, value, configId, propertyName, fallbackLabel = null) {
           const container = document.createElement('div');
           container.className = 'slider-container';
 
           const label = document.createElement('label');
           label.htmlFor = `layout-slider-${propertyName}-${configId}`;
-          label.textContent = (getTranslation(labelKey) ? getTranslation(labelKey) : labelKey) + ":";
+          label.textContent = (getTranslation(labelKey, fallbackLabel) ? getTranslation(labelKey, fallbackLabel) : (fallbackLabel || labelKey)) + ":";
           label.dataset.i18nLabel = labelKey;
           label.className = 'slider-label';
 
@@ -1992,6 +1993,7 @@
               container.appendChild(createCheckbox(`grid-split-${configId}`, 'sceneLayouts.controls.gridSplitScreenTwoCameras', currentConfig.splitScreenTwoCameras ?? DEFAULT_GRID_SPLIT_SCREEN, configId, 'splitScreenTwoCameras'));
           } else if (layoutType === 'reaction' || layoutType === 'highlight') {
               container.appendChild(createSliderWithNumberInput(`rh-spacing-${configId}`, 'sceneLayouts.controls.spacing', 0, 200, 1, currentConfig.spacing ?? DEFAULT_REACTION_HIGHLIGHT_SPACING, configId, 'spacing'));
+              container.appendChild(createSliderWithNumberInput(`rh-sideCamerasSize-${configId}`, 'sceneLayouts.controls.sideCamerasSize', 0, 50, 1, currentConfig.sideCamerasSize ?? DEFAULT_REACTION_HIGHLIGHT_SIDE_CAMERAS_SIZE, configId, 'sideCamerasSize', 'Side Cameras Size (%)'));
               container.appendChild(createSliderWithNumberInput(`rh-offsetx-${configId}`, 'sceneLayouts.controls.offsetX', -1000, 1000, 1, currentConfig.offsetX ?? DEFAULT_REACTION_HIGHLIGHT_X_OFFSET, configId, 'offsetX'));
               container.appendChild(createSliderWithNumberInput(`rh-offsety-${configId}`, 'sceneLayouts.controls.offsetY', -1000, 1000, 1, currentConfig.offsetY ?? DEFAULT_REACTION_HIGHLIGHT_Y_OFFSET, configId, 'offsetY'));
               container.appendChild(createCheckbox(`rh-distribute-${configId}`, 'sceneLayouts.controls.distributeCameras', currentConfig.distributeCameras ?? DEFAULT_REACTION_HIGHLIGHT_DISTRIBUTE_CAMERAS, configId, 'distributeCameras'));
@@ -3990,6 +3992,8 @@
         const offsetX = layoutConfig.offsetX ?? DEFAULT_REACTION_HIGHLIGHT_X_OFFSET;
         const offsetY = layoutConfig.offsetY ?? DEFAULT_REACTION_HIGHLIGHT_Y_OFFSET;
         const distributeCameras = layoutConfig.distributeCameras ?? DEFAULT_REACTION_HIGHLIGHT_DISTRIBUTE_CAMERAS;
+        const sideCamerasSizePercentage = layoutConfig.sideCamerasSize ?? DEFAULT_REACTION_HIGHLIGHT_SIDE_CAMERAS_SIZE;
+        const sideCamerasSizeRatio = sideCamerasSizePercentage / 100;
         const cameraCropRatio = isReactionLayout ? REACTION_CAMERA_CROP_RATIO : HIGHLIGHT_CAMERA_CROP_RATIO;
         const itemAspectRatio = REACTION_HIGHLIGHT_ASPECT_RATIO; 
 
@@ -4003,8 +4007,8 @@
         }
 
         
-        let leftCameraAreaWidth = camsLeft.length > 0 ? canvasWidth * 0.15 : 0;
-        let rightCameraAreaWidth = camsRight.length > 0 ? canvasWidth * 0.15 : 0;
+        let leftCameraAreaWidth = camsLeft.length > 0 ? canvasWidth * sideCamerasSizeRatio : 0;
+        let rightCameraAreaWidth = camsRight.length > 0 ? canvasWidth * sideCamerasSizeRatio : 0;
 
         
         let baseScaleWidthForMainContent = canvasWidth;
