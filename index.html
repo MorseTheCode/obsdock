@@ -1151,7 +1151,19 @@
       let vdoNinjaLastActivityTime = 0;
       let vdoNinjaConnectionCheckTimer = null;
       let screenShareId = null; 
-      let highlightedStreamId = null; 
+      let highlightedStreamId = null;
+      let directorStreamId = null;
+
+      window.setDirector = function(streamId) {
+          if (directorStreamId === streamId) {
+              directorStreamId = null; 
+          } else {
+              directorStreamId = streamId;
+          }
+          logMessage(directorStreamId ? `Stream ${streamId} set as Director.` : `Director cleared.`);
+          updateStreamList();
+          applyLayoutsToScenes(); 
+      }; 
       const layoutConfigsListDiv = document.getElementById('layoutConfigsList');
       const addLayoutConfigBtn = document.getElementById('addLayoutConfigBtn');
       let sceneLayoutConfigs = []; 
@@ -2229,7 +2241,14 @@
                             : `<span style="color:#FFC107">${getTranslation("activeStreams.notInObs")}</span>`
                         }
                       </div>
-                      <div style="margin-top: 8px;" class="flex-row">`; 
+                      <div style="margin-top: 8px;" class="flex-row">`;
+            
+            const isDirector = directorStreamId === streamId;
+            streamItemHTML += `
+                      <button class="small-btn highlight-btn" onclick="setDirector('${streamId}')"
+                          style="background-color: ${isDirector ? '#27ae60' : '#4C80AF'}; margin-right: 5px;">
+                          ${isDirector ? '★ ' + getTranslation("activeStreams.buttons.director", "Director") : getTranslation("activeStreams.buttons.setDirector", "Set Director")}
+                      </button>`; 
             streamItemHTML += `
                       <button class="add-stream-btn" data-stream-id="${streamId}"
                           style="background-color: ${
@@ -3269,7 +3288,7 @@
         }
         if (includeCommonParams) {
           url +=
-            "&cleanoutput&proaudio&ab=160&transparent&autoplay&noheader&webcursor&sl&cover&sl&showmeta"; 
+            "&cleanoutput&proaudio&ab=160&transparent&autoplay&noheader&webcursor&sl&cover&sl&showmeta&broadcast";
         }
         return url;
       }
@@ -3366,24 +3385,29 @@
             }
             logMessage("VDO.Ninja iframe connection established and active.", "logMessages.vdoNinja.iframeConnectedActive");
           }
-          if (data && data.streamID) {
-            const streamId = data.streamID;
-            
-            let incomingLabel = data.label;
-            if (data.value && typeof data.value === 'object' && data.value.label) {
-                incomingLabel = data.value.label;
-            }
-            
-            if (incomingLabel && activeStreams[streamId] && activeStreams[streamId].label !== incomingLabel) {
-                logMessage(
-                  `VDO.Ninja stream label dynamically updated for ID ${streamId}: "${incomingLabel}" (was "${activeStreams[streamId].label}")`,
-                  "logMessages.vdoNinja.streamLabelUpdated", { id: streamId, newLabel: incomingLabel, oldLabel: activeStreams[streamId].label }
-                );
-                activeStreams[streamId].label = incomingLabel;
-                updateStreamList(); 
+          if (data) {
+            let streamId = data.streamID;
+            if (!streamId && data.UUID) {
+                const foundStream = Object.values(activeStreams).find(s => s.uuid === data.UUID);
+                if (foundStream) streamId = foundStream.streamId;
             }
 
-            const label = incomingLabel || (window.translation ? getTranslation("vdoNinja.defaultStreamLabel", {id: streamId}) : `Stream ${streamId}`); 
+            if (streamId) {
+                let incomingLabel = data.label;
+                if (data.value && typeof data.value === 'object' && data.value.label) {
+                    incomingLabel = data.value.label;
+                }
+                
+                if (incomingLabel && activeStreams[streamId] && activeStreams[streamId].label !== incomingLabel) {
+                    logMessage(
+                      `VDO.Ninja stream label dynamically updated for ID ${streamId}: "${incomingLabel}" (was "${activeStreams[streamId].label}")`,
+                      "logMessages.vdoNinja.streamLabelUpdated", { id: streamId, newLabel: incomingLabel, oldLabel: activeStreams[streamId].label }
+                    );
+                    activeStreams[streamId].label = incomingLabel;
+                    updateStreamList(); 
+                }
+
+                const label = incomingLabel || (window.translation ? getTranslation("vdoNinja.defaultStreamLabel", {id: streamId}) : `Stream ${streamId}`); 
             if (
               (data.action === "view-connection" && data.value === true) || 
               data.action === "guest-connected" || 
@@ -3440,6 +3464,7 @@
                   updateStreamList(); 
                 }
               }
+            }
             }
           }
         },
@@ -3816,23 +3841,19 @@
       function sortCameraItemsWithDirectorFirst(items, generalCamPrefix) {
           const prefix = generalCamPrefix + "_";
           return items.sort((a, b) => {
+              if (!directorStreamId) return 0;
+              
               let isADirector = false;
               let isBDirector = false;
               
-              if (a.sourceName.startsWith(prefix)) {
-                  const streamIdA = a.sourceName.substring(prefix.length).replace(':s', '');
-                  const streamA = activeStreams[streamIdA];
-                  if (streamA && streamA.label && (streamA.label.toLowerCase().includes('diretor') || streamA.label.toLowerCase().includes('director'))) {
-                      isADirector = true;
-                  }
+              const expectedDirectorPrefix = prefix + directorStreamId;
+              
+              if (a.sourceName === expectedDirectorPrefix || a.sourceName === expectedDirectorPrefix + ":s") {
+                  isADirector = true;
               }
               
-              if (b.sourceName.startsWith(prefix)) {
-                  const streamIdB = b.sourceName.substring(prefix.length).replace(':s', '');
-                  const streamB = activeStreams[streamIdB];
-                  if (streamB && streamB.label && (streamB.label.toLowerCase().includes('diretor') || streamB.label.toLowerCase().includes('director'))) {
-                      isBDirector = true;
-                  }
+              if (b.sourceName === expectedDirectorPrefix || b.sourceName === expectedDirectorPrefix + ":s") {
+                  isBDirector = true;
               }
               
               if (isADirector && !isBDirector) return -1;
