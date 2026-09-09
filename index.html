@@ -3368,7 +3368,22 @@
           }
           if (data && data.streamID) {
             const streamId = data.streamID;
-            const label = data.label || (window.translation ? getTranslation("vdoNinja.defaultStreamLabel", {id: streamId}) : `Stream ${streamId}`); 
+            
+            let incomingLabel = data.label;
+            if (data.value && typeof data.value === 'object' && data.value.label) {
+                incomingLabel = data.value.label;
+            }
+            
+            if (incomingLabel && activeStreams[streamId] && activeStreams[streamId].label !== incomingLabel) {
+                logMessage(
+                  `VDO.Ninja stream label dynamically updated for ID ${streamId}: "${incomingLabel}" (was "${activeStreams[streamId].label}")`,
+                  "logMessages.vdoNinja.streamLabelUpdated", { id: streamId, newLabel: incomingLabel, oldLabel: activeStreams[streamId].label }
+                );
+                activeStreams[streamId].label = incomingLabel;
+                updateStreamList(); 
+            }
+
+            const label = incomingLabel || (window.translation ? getTranslation("vdoNinja.defaultStreamLabel", {id: streamId}) : `Stream ${streamId}`); 
             if (
               (data.action === "view-connection" && data.value === true) || 
               data.action === "guest-connected" || 
@@ -3798,10 +3813,38 @@
         }
       }
 
-      
+      function sortCameraItemsWithDirectorFirst(items, generalCamPrefix) {
+          const prefix = generalCamPrefix + "_";
+          return items.sort((a, b) => {
+              let isADirector = false;
+              let isBDirector = false;
+              
+              if (a.sourceName.startsWith(prefix)) {
+                  const streamIdA = a.sourceName.substring(prefix.length).replace(':s', '');
+                  const streamA = activeStreams[streamIdA];
+                  if (streamA && streamA.label && (streamA.label.toLowerCase().includes('diretor') || streamA.label.toLowerCase().includes('director'))) {
+                      isADirector = true;
+                  }
+              }
+              
+              if (b.sourceName.startsWith(prefix)) {
+                  const streamIdB = b.sourceName.substring(prefix.length).replace(':s', '');
+                  const streamB = activeStreams[streamIdB];
+                  if (streamB && streamB.label && (streamB.label.toLowerCase().includes('diretor') || streamB.label.toLowerCase().includes('director'))) {
+                      isBDirector = true;
+                  }
+              }
+              
+              if (isADirector && !isBDirector) return -1;
+              if (!isADirector && isBDirector) return 1;
+              return 0;
+          });
+      }
+
       async function applyGridLayoutToScene(sceneName, vdoNinjaSceneItems, canvasWidth, canvasHeight, layoutConfig) {
         const generalCamPrefix = getFullCameraPrefix();
-        const cameraItems = vdoNinjaSceneItems.filter(item => item.sourceName.startsWith(generalCamPrefix) && !item.sourceName.endsWith(':s')); 
+        let cameraItems = vdoNinjaSceneItems.filter(item => item.sourceName.startsWith(generalCamPrefix) && !item.sourceName.endsWith(':s')); 
+        cameraItems = sortCameraItemsWithDirectorFirst(cameraItems, generalCamPrefix);
 
         if (cameraItems.length === 0) {
             logMessage(`No VDO.Ninja camera sources to apply Grid layout in scene '${sceneName}'.`, "logMessages.obs.noSourcesForGridLayout", {sceneName});
@@ -3907,11 +3950,12 @@
             item.sourceName.startsWith(mainContentPrefix) && 
             (isReactionLayout ? item.sourceName.endsWith(mainContentSuffix) : !item.sourceName.endsWith(':s'))
         );
-        const sideCameraSources = vdoNinjaSceneItems.filter(item => 
+        let sideCameraSources = vdoNinjaSceneItems.filter(item => 
             item.sourceName.startsWith(generalCamPrefix) && 
             !mainContentSources.find(mcs => mcs.sourceName === item.sourceName) && 
             !item.sourceName.endsWith(':s') 
         );
+        sideCameraSources = sortCameraItemsWithDirectorFirst(sideCameraSources, generalCamPrefix);
         
         let mainContentItem = null;
         if (mainContentSources.length > 0) {
