@@ -1150,6 +1150,11 @@
       let requestCallbacks = {}; 
       let vdoNinjaLastActivityTime = 0;
       let vdoNinjaConnectionCheckTimer = null;
+      setInterval(() => {
+          if (vdoNinjaConnected && document.getElementById("vdoNinjaIframe") && document.getElementById("vdoNinjaIframe").contentWindow) {
+              document.getElementById("vdoNinjaIframe").contentWindow.postMessage({"getStreamInfo": true}, "*");
+          }
+      }, 5000);
       let screenShareId = null; 
       let highlightedStreamId = null;
       let directorStreamId = null;
@@ -3386,6 +3391,20 @@
             logMessage("VDO.Ninja iframe connection established and active.", "logMessages.vdoNinja.iframeConnectedActive");
           }
           if (data) {
+            if (data.streamInfo) {
+                let updatedAny = false;
+                for (const uuid in data.streamInfo) {
+                    const info = data.streamInfo[uuid];
+                    const streamId = info.streamID;
+                    const label = info.label;
+                    if (streamId && label && activeStreams[streamId] && activeStreams[streamId].label !== label) {
+                        logMessage(`VDO.Ninja stream label dynamically synced for ID ${streamId}: "${label}" (was "${activeStreams[streamId].label}")`, "logMessages.vdoNinja.streamLabelUpdated", { id: streamId, newLabel: label, oldLabel: activeStreams[streamId].label });
+                        activeStreams[streamId].label = label;
+                        updatedAny = true;
+                    }
+                }
+                if (updatedAny) updateStreamList();
+            }
             let streamId = data.streamID;
             if (!streamId && data.UUID) {
                 const foundStream = Object.values(activeStreams).find(s => s.uuid === data.UUID);
