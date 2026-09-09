@@ -125,7 +125,8 @@
         "offsetX": "Xオフセット",
         "offsetY": "Yオフセット",
         "gridSplitScreenTwoCameras": "2カメラ分割画面（グリッド）",
-        "distributeCameras": "カメラを配置（リアクション/ハイライト）"
+        "distributeCameras": "カメラを配置（リアクション/ハイライト）",
+        "sideCamerasSize": "Side Cameras Size (%)"
     }
   },
   "activeStreams": {

@@ -125,7 +125,8 @@
         "offsetX": "X Verschuiving",
         "offsetY": "Y Verschuiving",
         "gridSplitScreenTwoCameras": "Gesplitst scherm voor 2 camera's (Raster)",
-        "distributeCameras": "Camera's verdelen (Reactie/Highlight)"
+        "distributeCameras": "Camera's verdelen (Reactie/Highlight)",
+        "sideCamerasSize": "Side Cameras Size (%)"
     }
   },
   "activeStreams": {

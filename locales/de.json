@@ -125,7 +125,8 @@
         "offsetX": "X-Versatz",
         "offsetY": "Y-Versatz",
         "gridSplitScreenTwoCameras": "Geteilter Bildschirm für 2 Kameras (Raster)",
-        "distributeCameras": "Kameras verteilen (Reaktion/Hervorhebung)"
+        "distributeCameras": "Kameras verteilen (Reaktion/Hervorhebung)",
+        "sideCamerasSize": "Side Cameras Size (%)"
     }
   },
   "activeStreams": {

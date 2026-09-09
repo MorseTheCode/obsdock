@@ -125,7 +125,8 @@
         "offsetX": "X 오프셋",
         "offsetY": "Y 오프셋",
         "gridSplitScreenTwoCameras": "2개 카메라 분할 화면 (그리드)",
-        "distributeCameras": "카메라 배포 (리액션/하이라이트)"
+        "distributeCameras": "카메라 배포 (리액션/하이라이트)",
+        "sideCamerasSize": "Side Cameras Size (%)"
     }
   },
   "activeStreams": {

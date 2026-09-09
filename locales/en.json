@@ -125,7 +125,8 @@
         "offsetX": "X Offset",
         "offsetY": "Y Offset",
         "gridSplitScreenTwoCameras": "Split screen for 2 cameras (Grid)",
-        "distributeCameras": "Distribute cameras (Reaction/Highlight)"
+        "distributeCameras": "Distribute cameras (Reaction/Highlight)",
+        "sideCamerasSize": "Side Cameras Size (%)"
     }
   },
   "activeStreams": {

@@ -125,7 +125,8 @@
         "offsetX": "Décalage X",
         "offsetY": "Décalage Y",
         "gridSplitScreenTwoCameras": "Écran partagé pour 2 caméras (Grille)",
-        "distributeCameras": "Distribuer les caméras (Réaction/Surbrillance)"
+        "distributeCameras": "Distribuer les caméras (Réaction/Surbrillance)",
+        "sideCamerasSize": "Side Cameras Size (%)"
     }
   },
   "activeStreams": {

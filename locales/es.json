@@ -125,7 +125,8 @@
         "offsetX": "Desplazamiento X",
         "offsetY": "Desplazamiento Y",
         "gridSplitScreenTwoCameras": "Pantalla dividida para 2 cámaras (Cuadrícula)",
-        "distributeCameras": "Distribuir cámaras (Reacción/Resaltado)"
+        "distributeCameras": "Distribuir cámaras (Reacción/Resaltado)",
+        "sideCamerasSize": "Tamaño de las cámaras laterales (%)"
     }
   },
   "activeStreams": {

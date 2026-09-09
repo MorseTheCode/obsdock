@@ -125,7 +125,8 @@
         "offsetX": "X 偏移",
         "offsetY": "Y 偏移",
         "gridSplitScreenTwoCameras": "2 个摄像头分屏（网格）",
-        "distributeCameras": "分布摄像头（反应/高亮）"
+        "distributeCameras": "分布摄像头（反应/高亮）",
+        "sideCamerasSize": "Side Cameras Size (%)"
     }
   },
   "activeStreams": {

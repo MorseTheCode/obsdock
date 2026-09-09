@@ -125,7 +125,8 @@
         "offsetX": "Смещение X",
         "offsetY": "Смещение Y",
         "gridSplitScreenTwoCameras": "Разделенный экран для 2 камер (Сетка)",
-        "distributeCameras": "Распределить камеры (Реакция/Выделение)"
+        "distributeCameras": "Распределить камеры (Реакция/Выделение)",
+        "sideCamerasSize": "Side Cameras Size (%)"
     }
   },
   "activeStreams": {

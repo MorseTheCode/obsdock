@@ -125,7 +125,8 @@
         "offsetX": "Przesunięcie X",
         "offsetY": "Przesunięcie Y",
         "gridSplitScreenTwoCameras": "Podzielony ekran dla 2 kamer (Siatka)",
-        "distributeCameras": "Rozłóż kamery (Reakcja/Wyróżnienie)"
+        "distributeCameras": "Rozłóż kamery (Reakcja/Wyróżnienie)",
+        "sideCamerasSize": "Side Cameras Size (%)"
     }
   },
   "activeStreams": {

@@ -125,7 +125,8 @@
         "offsetX": "Deslocamento X",
         "offsetY": "Deslocamento Y",
         "gridSplitScreenTwoCameras": "Tela dividida para 2 câmeras (Grade)",
-        "distributeCameras": "Distribuir câmeras (Reação/Destaque)"
+        "distributeCameras": "Distribuir câmeras (Reação/Destaque)",
+        "sideCamerasSize": "Tamanho das Câmeras Laterais (%)"
     }
   },
   "activeStreams": {
