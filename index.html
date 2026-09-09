@@ -918,13 +918,14 @@
       const languageSelector = document.getElementById('languageSelector');
       
       
-      const DEFAULT_GRID_MARGIN = 75;
-      const DEFAULT_GRID_SPACING = 30;
+      const DEFAULT_GRID_MARGIN = 50;
+      const DEFAULT_GRID_SPACING = 40;
       const DEFAULT_GRID_X_OFFSET = 0;
       const DEFAULT_GRID_Y_OFFSET = 0;
       const DEFAULT_GRID_SPLIT_SCREEN = false;
 
-      const DEFAULT_REACTION_HIGHLIGHT_SPACING = 15;
+      const DEFAULT_REACTION_HIGHLIGHT_MARGIN = 15;
+      const DEFAULT_REACTION_HIGHLIGHT_SPACING = 20;
       const DEFAULT_REACTION_HIGHLIGHT_X_OFFSET = 0;
       const DEFAULT_REACTION_HIGHLIGHT_Y_OFFSET = 0;
       const DEFAULT_REACTION_HIGHLIGHT_DISTRIBUTE_CAMERAS = false;
@@ -1992,6 +1993,7 @@
               container.appendChild(createSliderWithNumberInput(`grid-offsety-${configId}`, 'sceneLayouts.controls.offsetY', -1000, 1000, 1, currentConfig.offsetY ?? DEFAULT_GRID_Y_OFFSET, configId, 'offsetY'));
               container.appendChild(createCheckbox(`grid-split-${configId}`, 'sceneLayouts.controls.gridSplitScreenTwoCameras', currentConfig.splitScreenTwoCameras ?? DEFAULT_GRID_SPLIT_SCREEN, configId, 'splitScreenTwoCameras'));
           } else if (layoutType === 'reaction' || layoutType === 'highlight') {
+              container.appendChild(createSliderWithNumberInput(`rh-margin-${configId}`, 'sceneLayouts.controls.margin', 0, 500, 1, currentConfig.margin ?? DEFAULT_REACTION_HIGHLIGHT_MARGIN, configId, 'margin'));
               container.appendChild(createSliderWithNumberInput(`rh-spacing-${configId}`, 'sceneLayouts.controls.spacing', 0, 200, 1, currentConfig.spacing ?? DEFAULT_REACTION_HIGHLIGHT_SPACING, configId, 'spacing'));
               container.appendChild(createSliderWithNumberInput(`rh-sideCamerasSize-${configId}`, 'sceneLayouts.controls.sideCamerasSize', 0, 50, 1, currentConfig.sideCamerasSize ?? DEFAULT_REACTION_HIGHLIGHT_SIDE_CAMERAS_SIZE, configId, 'sideCamerasSize', 'Side Cameras Size (%)'));
               container.appendChild(createSliderWithNumberInput(`rh-offsetx-${configId}`, 'sceneLayouts.controls.offsetX', -1000, 1000, 1, currentConfig.offsetX ?? DEFAULT_REACTION_HIGHLIGHT_X_OFFSET, configId, 'offsetX'));
@@ -3940,24 +3942,13 @@
             logMessage(`Main content for ${isReactionLayout ? 'Reaction' : 'Highlight'} layout in scene '${sceneName}' not found/visible. Applying fallback grid of cameras.`, 
                        isReactionLayout ? "logMessages.obs.reactionMainNotFoundFallbackGrid" : "logMessages.obs.highlightMainNotFoundFallbackGrid", { sceneName });
             
-            let fallbackGridMargin = DEFAULT_GRID_MARGIN;
-            let fallbackGridSpacing = DEFAULT_GRID_SPACING;
-            let fallbackGridOffsetX = DEFAULT_GRID_X_OFFSET;
-            let fallbackGridOffsetY = DEFAULT_GRID_Y_OFFSET;
+            let fallbackGridMargin = layoutConfig.margin ?? DEFAULT_REACTION_HIGHLIGHT_MARGIN;
+            let fallbackGridSpacing = layoutConfig.spacing ?? DEFAULT_REACTION_HIGHLIGHT_SPACING;
+            let fallbackGridOffsetX = layoutConfig.offsetX ?? DEFAULT_REACTION_HIGHLIGHT_X_OFFSET;
+            let fallbackGridOffsetY = layoutConfig.offsetY ?? DEFAULT_REACTION_HIGHLIGHT_Y_OFFSET;
             let fallbackGridSplitScreenTwoCameras = DEFAULT_GRID_SPLIT_SCREEN;
 
-            const firstGridSceneConfig = sceneLayoutConfigs.find(cfg => cfg.layoutType === 'grid' && cfg.sceneName);
-
-            if (firstGridSceneConfig) {
-                logMessage(`Using grid settings from the first configured 'Grid' layout scene ('${firstGridSceneConfig.sceneName}') as fallback for '${sceneName}'.`, "logMessages.obs.usingGridSceneFallbackSettings", { sceneName: firstGridSceneConfig.sceneName, targetScene: sceneName });
-                fallbackGridMargin = firstGridSceneConfig.margin ?? DEFAULT_GRID_MARGIN;
-                fallbackGridSpacing = firstGridSceneConfig.spacing ?? DEFAULT_GRID_SPACING;
-                fallbackGridOffsetX = firstGridSceneConfig.offsetX ?? DEFAULT_GRID_X_OFFSET;
-                fallbackGridOffsetY = firstGridSceneConfig.offsetY ?? DEFAULT_GRID_Y_OFFSET;
-                fallbackGridSplitScreenTwoCameras = firstGridSceneConfig.splitScreenTwoCameras ?? DEFAULT_GRID_SPLIT_SCREEN;
-            } else {
-                logMessage(`No 'Grid' layout scene found. Using default grid settings as fallback for '${sceneName}'.`, "logMessages.obs.usingDefaultGridFallbackSettings", {targetScene: sceneName});
-            }
+            logMessage(`Using spacing and margin from the ${isReactionLayout ? 'Reaction' : 'Highlight'} layout for fallback Grid.`, "logMessages.obs.usingReactHighlightFallbackSettings", { sceneName });
 
             const fallbackGridConfig = {
                 margin: fallbackGridMargin,
@@ -3988,6 +3979,7 @@
         }
 
         const mainSourceItem = mainContentItem; 
+        const margin = layoutConfig.margin ?? DEFAULT_REACTION_HIGHLIGHT_MARGIN;
         const spacing = layoutConfig.spacing ?? DEFAULT_REACTION_HIGHLIGHT_SPACING;
         const offsetX = layoutConfig.offsetX ?? DEFAULT_REACTION_HIGHLIGHT_X_OFFSET;
         const offsetY = layoutConfig.offsetY ?? DEFAULT_REACTION_HIGHLIGHT_Y_OFFSET;
@@ -4012,8 +4004,8 @@
 
         
         let baseScaleWidthForMainContent = canvasWidth;
-        baseScaleWidthForMainContent -= spacing;
-        baseScaleWidthForMainContent -= spacing;
+        baseScaleWidthForMainContent -= margin;
+        baseScaleWidthForMainContent -= margin;
         if (leftCameraAreaWidth > 0) {
             baseScaleWidthForMainContent -= leftCameraAreaWidth;
             baseScaleWidthForMainContent -= spacing; 
@@ -4027,14 +4019,14 @@
         let mainContentVisualHeight = mainContentVisualWidth / itemAspectRatio;
 
         
-        const availableHeightForScaling = canvasHeight - (2 * spacing);
+        const availableHeightForScaling = canvasHeight - (2 * margin);
         if (mainContentVisualHeight > availableHeightForScaling) {
             mainContentVisualHeight = Math.max(1, availableHeightForScaling);
             mainContentVisualWidth = mainContentVisualHeight * itemAspectRatio;
         }
         
         
-        const mainContentVisualX = spacing + 
+        const mainContentVisualX = margin + 
                                    (leftCameraAreaWidth > 0 ? (leftCameraAreaWidth + spacing) : 0) + 
                                    offsetX;
         
@@ -4061,16 +4053,16 @@
 
         const positionCameras = async (cameraList, startXForColumn, columnTotalWidth) => {
             if (cameraList.length > 0 && columnTotalWidth > 0) {
-                const camAvailableHeightTotal = canvasHeight - (cameraList.length + 1) * spacing; 
+                const camAvailableHeightTotal = canvasHeight - (2 * margin) - Math.max(0, cameraList.length - 1) * spacing; 
                 let camCellHeight = (cameraList.length > 0) ? Math.max(1, camAvailableHeightTotal / cameraList.length) : 0;
                 
                 // Calculate width based on height and aspect ratio, then apply crop
                 let camCellOriginalWidthUncropped = camCellHeight * itemAspectRatio; // Camera's original aspect ratio assumed same as main for now
-                let camCellVisibleWidthAfterCrop = camCellOriginalWidthUncropped * cameraCropRatio;
+                let camCellVisibleWidthAfterCrop = cameraCropRatio > 0 ? (camCellOriginalWidthUncropped * cameraCropRatio) : camCellOriginalWidthUncropped;
 
-                // If visible width after crop is too wide for the column, or invalid, adjust.
+                // If visible width after crop is too wide for the column, adjust.
                 // Prioritize fitting into columnTotalWidth.
-                if (camCellVisibleWidthAfterCrop > columnTotalWidth || camCellVisibleWidthAfterCrop <= 0) {
+                if (camCellVisibleWidthAfterCrop > columnTotalWidth) {
                      camCellVisibleWidthAfterCrop = Math.max(1, columnTotalWidth); 
                      if (cameraCropRatio > 0) { // Recalculate original width and height based on fitting visible width
                         camCellOriginalWidthUncropped = camCellVisibleWidthAfterCrop / cameraCropRatio;
@@ -4121,13 +4113,13 @@
         };
         
         // Position left cameras
-        const startXLeftColumn = spacing; // Relative to canvas edge before offsetX
+        const startXLeftColumn = margin; // Relative to canvas edge before offsetX
         await positionCameras(camsLeft, startXLeftColumn, leftCameraAreaWidth);
 
         // Position right cameras (if any)
         if (distributeCameras && camsRight.length > 0) {
             // Start X for right column is after main content and its preceding space
-            const startXRightColumn = spacing + /*left edge*/
+            const startXRightColumn = margin + /*left edge*/
                                       (leftCameraAreaWidth > 0 ? (leftCameraAreaWidth + spacing) : 0) + /*left col area*/
                                       mainContentVisualWidth + spacing; /*main content and space after it*/
             await positionCameras(camsRight, startXRightColumn, rightCameraAreaWidth);
