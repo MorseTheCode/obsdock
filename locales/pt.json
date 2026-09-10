@@ -145,6 +145,8 @@
         "removeFromObs": "Remover do OBS",
         "highlight": "Destacar",
         "unhighlight": "Remover Destaque",
+        "director": "Diretor",
+        "setDirector": "Definir Diretor",
         "screenShare": "Compart. Tela",
         "stopScreenShare": "Parar Compart."
     }

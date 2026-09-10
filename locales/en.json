@@ -1,4 +1,4 @@
-﻿{
+{
   "pageTitle": "VDO.Ninja OBS Control Dock",
   "mainHeading": "VDO.Ninja OBS Control",
   "languageSwitcher": {
@@ -145,6 +145,8 @@
         "removeFromObs": "Remove from OBS",
         "highlight": "Highlight",
         "unhighlight": "Unhighlight",
+        "director": "Director",
+        "setDirector": "Set Director",
         "screenShare": "Screen Share",
         "stopScreenShare": "Stop Screen Share"
     }
