@@ -3434,7 +3434,7 @@
                                 activeSpeakerHistory[sid] = Math.max(0, activeSpeakerHistory[sid] - 1);
                             }
                         }
-                        if (activeSpeakerHistory[loudestStreamId] > 3 && highlightedStreamId !== loudestStreamId && directorStreamId !== loudestStreamId) {
+                        if (activeSpeakerHistory[loudestStreamId] > 1 && highlightedStreamId !== loudestStreamId && directorStreamId !== loudestStreamId) {
                             const stream = activeStreams[loudestStreamId];
                             if (stream && stream.sourceCreated) {
                                 logMessage(`Auto-Highlight: Switching to ${loudestStreamId}`, "logMessages.vdoNinja.autoHighlight", { id: loudestStreamId });
