@@ -190,8 +190,9 @@
             "autoAddingStream": "自动将流 {{id}} 添加到 OBS。",
             "streamDisconnectedInactive": "VDO.Ninja 流已断开/非活动：\"{{label}}\"（ID：{{id}}）",
             "autoRemovingStream": "自动从 OBS 删除流 {{id}}。",
-            "streamLabelUpdated": "ID {{id}} 的 VDO.Ninja 流标签已更新：\"{{newLabel}}\"（原为 \"{{oldLabel}}\"）",
-            "connectionLostResetting": "VDO.Ninja 连接丢失（iframe 无活动）。尝试重置。"
+            "streamLabelUpdated": "Stream label automatically updated for ID {{id}}: \"{{newLabel}}\" (was \"{{oldLabel}}\")",
+            "connectionLostResetting": "VDO.Ninja 连接丢失（iframe 无活动）。尝试重置。",
+            "autoHighlight": "Auto-Highlight: Switching to {{id}}"
         },
         "obs": {
             "disconnecting": "正在断开 OBS WebSocket 连接...",

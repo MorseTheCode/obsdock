@@ -190,8 +190,9 @@
             "autoAddingStream": "Ajout automatique du flux {{id}} à OBS.",
             "streamDisconnectedInactive": "Flux VDO.Ninja déconnecté/inactif : \"{{label}}\" (ID : {{id}})",
             "autoRemovingStream": "Suppression automatique du flux {{id}} d'OBS.",
-            "streamLabelUpdated": "Étiquette de flux VDO.Ninja mise à jour pour l'ID {{id}} : \"{{newLabel}}\" (était \"{{oldLabel}}\")",
-            "connectionLostResetting": "Connexion VDO.Ninja perdue (aucune activité de l'iframe). Tentative de réinitialisation."
+            "streamLabelUpdated": "Nom du stream mis à jour automatiquement pour l'ID {{id}} : \"{{newLabel}}\" (était \"{{oldLabel}}\")",
+            "connectionLostResetting": "Connexion VDO.Ninja perdue (aucune activité de l'iframe). Tentative de réinitialisation.",
+            "autoHighlight": "Auto-Highlight : Basculement vers {{id}}"
         },
         "obs": {
             "disconnecting": "Déconnexion du WebSocket OBS...",

@@ -190,8 +190,9 @@
             "autoAddingStream": "Автоматическое добавление потока {{id}} в OBS.",
             "streamDisconnectedInactive": "Поток VDO.Ninja отключен/неактивен: \"{{label}}\" (ID: {{id}})",
             "autoRemovingStream": "Автоматическое удаление потока {{id}} из OBS.",
-            "streamLabelUpdated": "Метка потока VDO.Ninja обновлена для ID {{id}}: \"{{newLabel}}\" (была \"{{oldLabel}}\")",
-            "connectionLostResetting": "Соединение VDO.Ninja потеряно (нет активности от iframe). Попытка сброса."
+            "streamLabelUpdated": "Имя потока автоматически обновлено для ID {{id}}: \"{{newLabel}}\" (было \"{{oldLabel}}\")",
+            "connectionLostResetting": "Соединение VDO.Ninja потеряно (нет активности от iframe). Попытка сброса.",
+            "autoHighlight": "Авто-выделение: Переключение на {{id}}"
         },
         "obs": {
             "disconnecting": "Отключение от OBS WebSocket...",

@@ -191,8 +191,9 @@
             "autoAddingStream": "Auto-adding stream {{id}} to OBS.",
             "streamDisconnectedInactive": "VDO.Ninja stream disconnected/inactive: \"{{label}}\" (ID: {{id}})",
             "autoRemovingStream": "Auto-removing stream {{id}} from OBS.",
-            "streamLabelUpdated": "VDO.Ninja stream label updated for ID {{id}}: \"{{newLabel}}\" (was \"{{oldLabel}}\")",
-            "connectionLostResetting": "VDO.Ninja connection lost (no activity from iframe). Attempting to reset."
+            "streamLabelUpdated": "Stream label automatically updated for ID {{id}}: \"{{newLabel}}\" (was \"{{oldLabel}}\")",
+            "connectionLostResetting": "VDO.Ninja connection lost (no activity from iframe). Attempting to reset.",
+            "autoHighlight": "Auto-Highlight: Switching to {{id}}"
         },
         "obs": {
             "disconnecting": "Disconnecting from OBS WebSocket...",

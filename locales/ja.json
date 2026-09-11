@@ -190,8 +190,9 @@
             "autoAddingStream": "ストリーム{{id}}をOBSに自動追加しています。",
             "streamDisconnectedInactive": "VDO.Ninjaストリームが切断/非アクティブ：「{{label}}」（ID：{{id}}）",
             "autoRemovingStream": "ストリーム{{id}}をOBSから自動削除しています。",
-            "streamLabelUpdated": "ID {{id}}のVDO.Ninjaストリームラベルが更新されました：「{{newLabel}}」（以前は「{{oldLabel}}」）",
-            "connectionLostResetting": "VDO.Ninja接続が失われました（iframeからの活動なし）。リセットを試みています。"
+            "streamLabelUpdated": "ID {{id}} のストリーム名が自動的に更新されました: \"{{newLabel}}\" (以前は \"{{oldLabel}}\")",
+            "connectionLostResetting": "VDO.Ninja接続が失われました（iframeからの活動なし）。リセットを試みています。",
+            "autoHighlight": "自動ハイライト： {{id}} に切り替えます"
         },
         "obs": {
             "disconnecting": "OBS WebSocketから切断中...",

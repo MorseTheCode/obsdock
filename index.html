@@ -1158,7 +1158,6 @@
       setInterval(() => {
           if (vdoNinjaConnected && document.getElementById("vdoNinjaIframe") && document.getElementById("vdoNinjaIframe").contentWindow) {
               document.getElementById("vdoNinjaIframe").contentWindow.postMessage({"getStreamInfo": true}, "*");
-              document.getElementById("vdoNinjaIframe").contentWindow.postMessage({"requestStatsContinuous": true}, "*");
           }
       }, 5000);
       let screenShareId = null; 
@@ -2240,23 +2239,11 @@
 
             const isHighlighted = highlightedStreamId === streamId; 
             const isCurrentlyScreenSharingThisStream = screenShareId === streamId;
-            let qualityHtml = "";
-            if (stream.resolution || stream.bitrate) {
-                let qualityText = "";
-                let indicatorColor = "#4CAF50"; // Green
-                if (stream.bitrate && stream.bitrate < 1000) indicatorColor = "#FFC107"; // Yellow
-                if (stream.bitrate && stream.bitrate < 300) indicatorColor = "#F44336"; // Red
-                
-                if (stream.resolution) qualityText += `<span style="color:${indicatorColor}">●</span> ${stream.resolution} `;
-                if (stream.bitrate) qualityText += `| ${stream.bitrate} kbps`;
-                qualityHtml = `<div style="font-size: 0.85em; color: #ccc; margin-top: 2px;">${qualityText}</div>`;
-            }
 
             let streamItemHTML = `
                       <div style="font-weight: 600; font-size: 1.05em; color: #E0E0E0;">${
                         stream.label || streamId
                       }</div>
-                      ${qualityHtml}
                       <small>${getTranslation("activeStreams.streamIdLabel", {id: streamId})}${
               stream.label ? ` | ${getTranslation("activeStreams.labelLabel", {label: stream.label})}` : ""
             }</small>
@@ -3422,7 +3409,7 @@
                     let maxLoudness = 0;
                     for (const streamID in data.loudness) {
                         const level = data.loudness[streamID];
-                        if (level > maxLoudness && level > 8) {
+                        if (level > maxLoudness && level > 6) {
                             maxLoudness = level;
                             loudestStreamId = streamID;
                         }
@@ -3466,20 +3453,10 @@
                     const info = data.streamInfo[uuid];
                     const streamId = info.streamID;
                     const label = info.label;
-                    const resolution = info.info ? info.info.res : undefined;
-                    const bitrate = info.info ? info.info.bitrate : undefined;
                     if (streamId && activeStreams[streamId]) {
                         if (label && activeStreams[streamId].label !== label) {
                             logMessage(`VDO.Ninja stream label dynamically synced for ID ${streamId}: "${label}" (was "${activeStreams[streamId].label}")`, "logMessages.vdoNinja.streamLabelUpdated", { id: streamId, newLabel: label, oldLabel: activeStreams[streamId].label });
                             activeStreams[streamId].label = label;
-                            updatedAny = true;
-                        }
-                        if (resolution !== undefined && activeStreams[streamId].resolution !== resolution) {
-                            activeStreams[streamId].resolution = resolution;
-                            updatedAny = true;
-                        }
-                        if (bitrate !== undefined && activeStreams[streamId].bitrate !== bitrate) {
-                            activeStreams[streamId].bitrate = bitrate;
                             updatedAny = true;
                         }
                     }

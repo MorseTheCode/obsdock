@@ -190,8 +190,9 @@
             "autoAddingStream": "스트림 {{id}}을(를) OBS에 자동 추가 중.",
             "streamDisconnectedInactive": "VDO.Ninja 스트림 연결 해제/비활성: \"{{label}}\" (ID: {{id}})",
             "autoRemovingStream": "스트림 {{id}}을(를) OBS에서 자동 제거 중.",
-            "streamLabelUpdated": "ID {{id}}에 대한 VDO.Ninja 스트림 레이블 업데이트: \"{{newLabel}}\" (이전: \"{{oldLabel}}\")",
-            "connectionLostResetting": "VDO.Ninja 연결 끊김 (iframe에서 활동 없음). 재설정을 시도합니다."
+            "streamLabelUpdated": "ID {{id}}의 스트림 이름이 자동으로 업데이트되었습니다: \"{{newLabel}}\" (이전: \"{{oldLabel}}\")",
+            "connectionLostResetting": "VDO.Ninja 연결 끊김 (iframe에서 활동 없음). 재설정을 시도합니다.",
+            "autoHighlight": "자동 하이라이트: {{id}}(으)로 전환 중"
         },
         "obs": {
             "disconnecting": "OBS WebSocket 연결 해제 중...",
