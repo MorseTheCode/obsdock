@@ -3423,7 +3423,7 @@
                         }
                         
                         // Prevent spamming the function if it's already the highlighted stream or if we just requested it
-                        if (activeSpeakerHistory[loudestStreamId] > 1 && 
+                        if (activeSpeakerHistory[loudestStreamId] > 0 && 
                             highlightedStreamId !== loudestStreamId && 
                             directorStreamId !== loudestStreamId && 
                             window._pendingAutoHighlight !== loudestStreamId) {
