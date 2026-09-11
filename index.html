@@ -3427,10 +3427,9 @@
                             highlightedStreamId !== loudestStreamId && 
                             directorStreamId !== loudestStreamId && 
                             window._pendingAutoHighlight !== loudestStreamId) {
-                            
-                            window._pendingAutoHighlight = loudestStreamId;
                             const stream = activeStreams[loudestStreamId];
                             if (stream && stream.sourceCreated) {
+                                window._pendingAutoHighlight = loudestStreamId;
                                 logMessage(`Auto-Highlight: Switching to ${loudestStreamId}`, "logMessages.vdoNinja.autoHighlight", { id: loudestStreamId });
                                 handleHighlightClick(loudestStreamId, stream.label).finally(() => {
                                     if (window._pendingAutoHighlight === loudestStreamId) {
