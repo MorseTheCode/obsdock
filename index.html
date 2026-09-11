@@ -3422,7 +3422,7 @@
                     let maxLoudness = 0;
                     for (const streamID in data.loudness) {
                         const level = data.loudness[streamID];
-                        if (level > maxLoudness && level > 15) {
+                        if (level > maxLoudness && level > 5) {
                             maxLoudness = level;
                             loudestStreamId = streamID;
                         }
@@ -3434,7 +3434,7 @@
                                 activeSpeakerHistory[sid] = Math.max(0, activeSpeakerHistory[sid] - 1);
                             }
                         }
-                        if (activeSpeakerHistory[loudestStreamId] > 1 && highlightedStreamId !== loudestStreamId && directorStreamId !== loudestStreamId) {
+                        if (activeSpeakerHistory[loudestStreamId] > 0 && highlightedStreamId !== loudestStreamId && directorStreamId !== loudestStreamId) {
                             const stream = activeStreams[loudestStreamId];
                             if (stream && stream.sourceCreated) {
                                 logMessage(`Auto-Highlight: Switching to ${loudestStreamId}`, "logMessages.vdoNinja.autoHighlight", { id: loudestStreamId });
