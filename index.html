@@ -878,6 +878,10 @@
     <div class="container">
         <h2 class="collapsible" data-state="expand" data-i18n="activeStreams.title">Active Streams</h2>
         <div class="collapsible-content">
+        <div class="form-group flex-row" style="align-items: center; justify-content: flex-end; margin-bottom: 10px;">
+            <input type="checkbox" id="autoHighlightToggle" />
+            <label for="autoHighlightToggle" style="margin-left: 5px; cursor: pointer;" data-i18n="activeStreams.autoHighlight">Auto-Highlight Active Speaker</label>
+        </div>
         <div id="streamList" class="stream-list">
           <div
             class="stream-item"
@@ -1136,6 +1140,7 @@
       const sourceCodecSelect = document.getElementById("sourceCodec");
       const autoAddSourcesCheckbox = document.getElementById("autoAddSources");
       const autoRemoveSourcesCheckbox = document.getElementById("autoRemoveSources");
+      const autoHighlightToggle = document.getElementById("autoHighlightToggle");
       const streamListContainer = document.getElementById("streamList");
       const logArea = document.getElementById("logArea");
       const customCssInput = document.getElementById("customCssInput");
@@ -1157,6 +1162,8 @@
       }, 5000);
       let screenShareId = null; 
       let highlightedStreamId = null;
+      let autoHighlightEnabled = false;
+      let activeSpeakerHistory = {};
       let directorStreamId = null;
 
       window.setDirector = function(streamId) {
@@ -1450,6 +1457,7 @@
           sourceCodec: sourceCodecSelect.value,
           autoAddSources: autoAddSourcesCheckbox.checked,
           autoRemoveSources: autoRemoveSourcesCheckbox.checked,
+          autoHighlightEnabled: autoHighlightToggle.checked,
           screenShareWidth: document.getElementById("screenShareWidth").value,
           screenShareHeight: document.getElementById("screenShareHeight").value,
           language: languageSelector.value || 'en',
@@ -2140,9 +2148,12 @@
             sourceSizingSelect.value = settings.sourceSizing || "defaultSize";
             sourceCodecSelect.value = settings.sourceCodec || "";
             autoAddSourcesCheckbox.checked =
-              settings.autoAddSources !== false; 
-            autoRemoveSourcesCheckbox.checked =
-              settings.autoRemoveSources !== false; 
+            settings.autoAddSources !== false;
+          autoRemoveSourcesCheckbox.checked =
+            settings.autoRemoveSources !== false;
+          autoHighlightToggle.checked = 
+            settings.autoHighlightEnabled === true;
+          autoHighlightEnabled = autoHighlightToggle.checked; 
             const screenShareWidthInput =
               document.getElementById("screenShareWidth");
             const screenShareHeightInput =
@@ -2228,10 +2239,23 @@
 
             const isHighlighted = highlightedStreamId === streamId; 
             const isCurrentlyScreenSharingThisStream = screenShareId === streamId;
+            let qualityHtml = "";
+            if (stream.resolution || stream.bitrate) {
+                let qualityText = "";
+                let indicatorColor = "#4CAF50"; // Green
+                if (stream.bitrate && stream.bitrate < 1000) indicatorColor = "#FFC107"; // Yellow
+                if (stream.bitrate && stream.bitrate < 300) indicatorColor = "#F44336"; // Red
+                
+                if (stream.resolution) qualityText += `<span style="color:${indicatorColor}">●</span> ${stream.resolution} `;
+                if (stream.bitrate) qualityText += `| ${stream.bitrate} kbps`;
+                qualityHtml = `<div style="font-size: 0.85em; color: #ccc; margin-top: 2px;">${qualityText}</div>`;
+            }
+
             let streamItemHTML = `
                       <div style="font-weight: 600; font-size: 1.05em; color: #E0E0E0;">${
                         stream.label || streamId
                       }</div>
+                      ${qualityHtml}
                       <small>${getTranslation("activeStreams.streamIdLabel", {id: streamId})}${
               stream.label ? ` | ${getTranslation("activeStreams.labelLabel", {label: stream.label})}` : ""
             }</small>
@@ -3347,8 +3371,8 @@
           )}`;
         }
         vdoNinjaUrl +=
-          "&cleanoutput&dataonly&nocursor&nopush&noaudio&novideo&cors=" +
-          encodeURIComponent(window.location.origin); 
+        "&cleanoutput&dataonly&nocursor&nopush&noaudio&novideo&pushloudness&cors=" +
+        encodeURIComponent(window.location.origin); 
         logMessage(`Initializing VDO.Ninja iframe with URL: ${vdoNinjaUrl}`, "logMessages.vdoNinja.initializingIframe", { url: vdoNinjaUrl });
         vdoNinjaIframe.src = "about:blank"; 
         vdoNinjaIframe.setAttribute("crossorigin", "anonymous"); 
@@ -3391,16 +3415,61 @@
             logMessage("VDO.Ninja iframe connection established and active.", "logMessages.vdoNinja.iframeConnectedActive");
           }
           if (data) {
+            if (data.loudness) {
+                if (autoHighlightEnabled) {
+                    let loudestStreamId = null;
+                    let maxLoudness = 0;
+                    for (const streamID in data.loudness) {
+                        const level = data.loudness[streamID];
+                        if (level > maxLoudness && level > 15) {
+                            maxLoudness = level;
+                            loudestStreamId = streamID;
+                        }
+                    }
+                    if (loudestStreamId) {
+                        activeSpeakerHistory[loudestStreamId] = (activeSpeakerHistory[loudestStreamId] || 0) + 1;
+                        for (const sid in activeSpeakerHistory) {
+                            if (sid !== loudestStreamId) {
+                                activeSpeakerHistory[sid] = Math.max(0, activeSpeakerHistory[sid] - 1);
+                            }
+                        }
+                        if (activeSpeakerHistory[loudestStreamId] > 3 && highlightedStreamId !== loudestStreamId && directorStreamId !== loudestStreamId) {
+                            const stream = activeStreams[loudestStreamId];
+                            if (stream && stream.sourceCreated) {
+                                logMessage(`Auto-Highlight: Switching to ${loudestStreamId}`, "logMessages.vdoNinja.autoHighlight", { id: loudestStreamId });
+                                handleHighlightClick(loudestStreamId, stream.label);
+                                activeSpeakerHistory[loudestStreamId] = 0; 
+                            }
+                        }
+                    } else {
+                        for (const sid in activeSpeakerHistory) {
+                            activeSpeakerHistory[sid] = Math.max(0, activeSpeakerHistory[sid] - 1);
+                        }
+                    }
+                }
+            }
             if (data.streamInfo) {
                 let updatedAny = false;
                 for (const uuid in data.streamInfo) {
                     const info = data.streamInfo[uuid];
                     const streamId = info.streamID;
                     const label = info.label;
-                    if (streamId && label && activeStreams[streamId] && activeStreams[streamId].label !== label) {
-                        logMessage(`VDO.Ninja stream label dynamically synced for ID ${streamId}: "${label}" (was "${activeStreams[streamId].label}")`, "logMessages.vdoNinja.streamLabelUpdated", { id: streamId, newLabel: label, oldLabel: activeStreams[streamId].label });
-                        activeStreams[streamId].label = label;
-                        updatedAny = true;
+                    const resolution = info.resolution;
+                    const bitrate = info.bitrate;
+                    if (streamId && activeStreams[streamId]) {
+                        if (label && activeStreams[streamId].label !== label) {
+                            logMessage(`VDO.Ninja stream label dynamically synced for ID ${streamId}: "${label}" (was "${activeStreams[streamId].label}")`, "logMessages.vdoNinja.streamLabelUpdated", { id: streamId, newLabel: label, oldLabel: activeStreams[streamId].label });
+                            activeStreams[streamId].label = label;
+                            updatedAny = true;
+                        }
+                        if (resolution !== undefined && activeStreams[streamId].resolution !== resolution) {
+                            activeStreams[streamId].resolution = resolution;
+                            updatedAny = true;
+                        }
+                        if (bitrate !== undefined && activeStreams[streamId].bitrate !== bitrate) {
+                            activeStreams[streamId].bitrate = bitrate;
+                            updatedAny = true;
+                        }
                     }
                 }
                 if (updatedAny) updateStreamList();
@@ -4541,12 +4610,15 @@
       [
         obsWsUrlInput, obsWsPasswordInput,
         vdoNinjaBaseUrlInput, vdoNinjaRoomInput, vdoNinjaPasswordInput, vdoNinjaStreamIdsInput,
-        autoAddSourcesCheckbox, autoRemoveSourcesCheckbox,
+        autoAddSourcesCheckbox, autoRemoveSourcesCheckbox, autoHighlightToggle,
         document.getElementById("screenShareWidth"), document.getElementById("screenShareHeight"),
         sourceSizingSelect, 
         sourceCodecSelect
       ].forEach((el) => {
         if (el) el.addEventListener("change", saveSettings); 
+      });
+      autoHighlightToggle.addEventListener("change", () => {
+        autoHighlightEnabled = autoHighlightToggle.checked;
       });
       sourceSizingSelect.addEventListener("change", () => {
         saveSettings();
