@@ -1158,6 +1158,7 @@
       setInterval(() => {
           if (vdoNinjaConnected && document.getElementById("vdoNinjaIframe") && document.getElementById("vdoNinjaIframe").contentWindow) {
               document.getElementById("vdoNinjaIframe").contentWindow.postMessage({"getStreamInfo": true}, "*");
+              document.getElementById("vdoNinjaIframe").contentWindow.postMessage({"requestStatsContinuous": true}, "*");
           }
       }, 5000);
       let screenShareId = null; 
@@ -3371,7 +3372,7 @@
           )}`;
         }
         vdoNinjaUrl +=
-        "&cleanoutput&dataonly&nocursor&nopush&noaudio&novideo&pushloudness&cors=" +
+        "&cleanoutput&nocursor&nopush&muted&novideo&pushloudness&cors=" +
         encodeURIComponent(window.location.origin); 
         logMessage(`Initializing VDO.Ninja iframe with URL: ${vdoNinjaUrl}`, "logMessages.vdoNinja.initializingIframe", { url: vdoNinjaUrl });
         vdoNinjaIframe.src = "about:blank"; 
@@ -3454,8 +3455,8 @@
                     const info = data.streamInfo[uuid];
                     const streamId = info.streamID;
                     const label = info.label;
-                    const resolution = info.resolution;
-                    const bitrate = info.bitrate;
+                    const resolution = info.info ? info.info.res : undefined;
+                    const bitrate = info.info ? info.info.bitrate : undefined;
                     if (streamId && activeStreams[streamId]) {
                         if (label && activeStreams[streamId].label !== label) {
                             logMessage(`VDO.Ninja stream label dynamically synced for ID ${streamId}: "${label}" (was "${activeStreams[streamId].label}")`, "logMessages.vdoNinja.streamLabelUpdated", { id: streamId, newLabel: label, oldLabel: activeStreams[streamId].label });
