@@ -3708,6 +3708,21 @@
               sceneItemEnabled: true, 
             });
             logMessage(`Global source '${effectiveSourceName}' created and added to scene '${primaryTargetSceneName}'.`, "logMessages.obs.sourceCreatedAddedToScene", {sourceName: effectiveSourceName, sceneName: primaryTargetSceneName});
+
+            // WORKAROUND for VDO.Ninja WebRTC race condition:
+            // When a new viewer (OBS Browser Source) connects, VDO.Ninja sometimes drops the audio track to existing viewers (like this Dock).
+            // Refreshing the OBS Browser Source shortly after creation forces VDO.Ninja to renegotiate and restores the Dock's audio.
+            setTimeout(async () => {
+                try {
+                    // logMessage(`Refreshing '${effectiveSourceName}' to fix VDO.Ninja WebRTC audio drop...`, "logMessages.obs.refreshingForWebRTC", { sourceName: effectiveSourceName });
+                    await sendRequest("SetInputSettings", { inputName: effectiveSourceName, inputSettings: { url: "about:blank" } });
+                    setTimeout(async () => {
+                        await sendRequest("SetInputSettings", { inputName: effectiveSourceName, inputSettings: { url: vdoNinjaStreamUrl } });
+                    }, 250);
+                } catch(e) {
+                    console.error("WebRTC workaround refresh failed", e);
+                }
+            }, 2000);
           } else {
             logMessage(
               `Source '${effectiveSourceName}' already exists globally. Updating its settings. URL: ${vdoNinjaStreamUrl}`,
