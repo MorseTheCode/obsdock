@@ -1045,12 +1045,15 @@
           keys.forEach(keyInstruction => {
             if (keyInstruction.startsWith('[placeholder]')) {
               const translationKey = keyInstruction.substring('[placeholder]'.length);
-              element.placeholder = getTranslation(translationKey);
+              const t = getTranslation(translationKey);
+              if (t !== translationKey) element.placeholder = t;
             } else if (keyInstruction.startsWith('[title]')) {
               const translationKey = keyInstruction.substring('[title]'.length);
-              element.title = getTranslation(translationKey);
+              const t = getTranslation(translationKey);
+              if (t !== translationKey) element.title = t;
             } else {
-              element.innerHTML = getTranslation(keyInstruction);
+              const t = getTranslation(keyInstruction);
+              if (t !== keyInstruction) element.innerHTML = t;
             }
           });
         });
@@ -1909,11 +1912,16 @@
                 const keys = keyAttr.split(';').map(k => k.trim()).filter(k => k);
                 keys.forEach(keyInstruction => {
                     if (keyInstruction.startsWith('[placeholder]')) {
-                        element.placeholder = getTranslation(keyInstruction.substring('[placeholder]'.length));
+                        const tk = keyInstruction.substring('[placeholder]'.length);
+                        const t = getTranslation(tk);
+                        if (t !== tk) element.placeholder = t;
                     } else if (keyInstruction.startsWith('[title]')) {
-                        element.title = getTranslation(keyInstruction.substring('[title]'.length));
+                        const tk = keyInstruction.substring('[title]'.length);
+                        const t = getTranslation(tk);
+                        if (t !== tk) element.title = t;
                     } else {
-                        element.innerHTML = getTranslation(keyInstruction);
+                        const t = getTranslation(keyInstruction);
+                        if (t !== keyInstruction) element.innerHTML = t;
                     }
                 });
             });
