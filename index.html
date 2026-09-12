@@ -4752,7 +4752,7 @@
           option.textContent = name;
           presetSelector.appendChild(option);
         }
-        updateContent(); // Re-apply translations for the placeholder
+        if (window.translation) updateContent(); // Re-apply translations for the placeholder
       }
 
       savePresetBtn.addEventListener("click", () => {
