@@ -3445,6 +3445,11 @@
                                     }
                                 });
                                 activeSpeakerHistory[loudestStreamId] = 0;
+                            } else if (stream && !stream.sourceCreated) {
+                                if (!window._debugSkippedLogTime || Date.now() - window._debugSkippedLogTime > 2000) {
+                                    logMessage(`DEBUG: Auto-Highlight skipping ${loudestStreamId} because sourceCreated is FALSE!`, "logMessages.vdoNinja.autoHighlightSkipped", { id: loudestStreamId });
+                                    window._debugSkippedLogTime = Date.now();
+                                }
                             }
                         }
                     } else {
@@ -3511,8 +3516,13 @@
               updateStreamList(); 
               if (autoAddSourcesCheckbox.checked) {
                 logMessage(`Auto-adding stream ${streamId} to OBS.`, "logMessages.vdoNinja.autoAddingStream", { id: streamId });
-                const targetInfo = getTargetSceneForStream(streamId, label);
-                addStreamToObs(streamId, label, targetInfo); 
+                setTimeout(() => {
+                    // Check if they are still connected and not already created manually during the delay
+                    if (activeStreams[streamId] && !activeStreams[streamId].sourceCreated) {
+                        const targetInfo = getTargetSceneForStream(streamId, label);
+                        addStreamToObs(streamId, label, targetInfo);
+                    }
+                }, 3000);
               }
             } else if (
               (data.action === "view-connection" && data.value === false) || 
