@@ -772,6 +772,21 @@
         </div>
       </div>
     </div>
+    <div class="container" id="presetsContainer">
+      <h2 class="collapsible" data-state="expand" data-i18n="presets.title">Scene Presets</h2>
+      <div class="collapsible-content">
+        <div class="settings-group flex-row" style="gap: 10px; align-items: center; flex-wrap: wrap;">
+          <input type="text" id="presetNameInput" placeholder="Preset Name" data-i18n="[placeholder]presets.namePlaceholder" style="flex: 1; min-width: 150px; padding: 6px; box-sizing: border-box;" />
+          <button id="savePresetBtn" style="background-color: #2e8b57; color: white;" data-i18n="presets.saveButton">Save</button>
+          <span style="border-left: 1px solid var(--border-color); height: 24px; margin: 0 5px;"></span>
+          <select id="presetSelector" style="flex: 1; min-width: 150px; padding: 6px; box-sizing: border-box;">
+            <option value="" disabled selected data-i18n="presets.selectPlaceholder">Select Preset...</option>
+          </select>
+          <button id="loadPresetBtn" style="background-color: #007bff; color: white;" data-i18n="presets.loadButton">Load</button>
+          <button id="deletePresetBtn" style="background-color: #dc3545; color: white;" data-i18n="presets.deleteButton">Delete</button>
+        </div>
+      </div>
+    </div>
     <div class="container">
       <h2 class="collapsible" data-state="expand" data-i18n="obsTargetSettings.title">OBS Target Settings</h2>
       <div class="collapsible-content">
@@ -824,6 +839,10 @@
           <label class="checkbox-label">
             <input type="checkbox" id="autoRemoveSources" checked />
             <span data-i18n="obsTargetSettings.autoRemoveSourcesLabel">Auto-remove sources on disconnect</span>
+          </label>
+          <label class="checkbox-label" style="display: flex; align-items: center; gap: 5px;">
+            <span data-i18n="obsTargetSettings.autoHighlightDelayLabel">Auto-Highlight Delay (pulses):</span>
+            <input type="number" id="autoHighlightDelay" value="40" min="1" max="200" style="width: 60px; padding: 2px;" title="1 pulse = ~50ms" />
           </label>
         </div>
         <div class="settings-group">
@@ -1625,6 +1644,8 @@
 
       
       function loadStreamMappings() {
+        streamIdMappingsListDiv.innerHTML = "";
+        streamMappings = [];
         const mappingsJson = localStorage.getItem("obsNinjaStreamMappings");
         if (mappingsJson) {
           try {
@@ -3422,16 +3443,18 @@
                         currentLoudness[streamID] = Math.max(0, currentLoudness[streamID] - 1);
                     }
 
+                    const delayThreshold = parseInt(document.getElementById("autoHighlightDelay")?.value || 40, 10);
+
                     if (loudestStreamId) {
                         activeSpeakerHistory[loudestStreamId] = (activeSpeakerHistory[loudestStreamId] || 0) + 1;
                         for (const sid in activeSpeakerHistory) {
                             if (sid !== loudestStreamId) {
-                                activeSpeakerHistory[sid] = Math.max(0, activeSpeakerHistory[sid] - 1);
+                                activeSpeakerHistory[sid] = Math.max(0, activeSpeakerHistory[sid] - 2);
                             }
                         }
 
                         // Prevent spamming the function if it's already the highlighted stream or if we just requested it
-                        if (activeSpeakerHistory[loudestStreamId] > 3 &&
+                        if (activeSpeakerHistory[loudestStreamId] > delayThreshold &&
                             highlightedStreamId !== loudestStreamId &&
                             directorStreamId !== loudestStreamId &&
                             window._pendingAutoHighlight !== loudestStreamId) {
@@ -3454,7 +3477,7 @@
                         }
                     } else {
                         for (const sid in activeSpeakerHistory) {
-                            activeSpeakerHistory[sid] = Math.max(0, activeSpeakerHistory[sid] - 1);
+                            activeSpeakerHistory[sid] = Math.max(0, activeSpeakerHistory[sid] - 2);
                         }
                     }
                 }
@@ -4704,9 +4727,90 @@
         }
         logMessage("Codec/CSS update for OBS sources complete.", "logMessages.obs.codecCssUpdateComplete");
       });
-      document.addEventListener("DOMContentLoaded", () => { 
-        initializeApp(); 
-        updateLayoutConfigsListEmptyState(); 
+      // === SCENE PRESETS LOGIC ===
+      const presetNameInput = document.getElementById("presetNameInput");
+      const savePresetBtn = document.getElementById("savePresetBtn");
+      const presetSelector = document.getElementById("presetSelector");
+      const loadPresetBtn = document.getElementById("loadPresetBtn");
+      const deletePresetBtn = document.getElementById("deletePresetBtn");
+
+      function loadPresetsFromStorage() {
+        const presetsJson = localStorage.getItem("obsNinjaScenePresets");
+        return presetsJson ? JSON.parse(presetsJson) : {};
+      }
+
+      function savePresetsToStorage(presets) {
+        localStorage.setItem("obsNinjaScenePresets", JSON.stringify(presets));
+      }
+
+      function updatePresetSelector() {
+        const presets = loadPresetsFromStorage();
+        presetSelector.innerHTML = '<option value="" disabled selected data-i18n="presets.selectPlaceholder">Select Preset...</option>';
+        for (const name in presets) {
+          const option = document.createElement("option");
+          option.value = name;
+          option.textContent = name;
+          presetSelector.appendChild(option);
+        }
+        updateContent(); // Re-apply translations for the placeholder
+      }
+
+      savePresetBtn.addEventListener("click", () => {
+        const name = presetNameInput.value.trim();
+        if (!name) {
+          alert("Please enter a name for the preset.");
+          return;
+        }
+        
+        const presets = loadPresetsFromStorage();
+        presets[name] = {
+          mappings: streamMappings,
+          layouts: sceneLayoutConfigs
+        };
+        
+        savePresetsToStorage(presets);
+        updatePresetSelector();
+        presetNameInput.value = "";
+        presetSelector.value = name;
+        logMessage(`Saved preset '${name}'`, "logMessages.presets.saved", {name});
+      });
+
+      loadPresetBtn.addEventListener("click", () => {
+        const name = presetSelector.value;
+        if (!name) return;
+        
+        if (!confirm(`Are you sure you want to load the preset '${name}'? This will replace your current mappings and layouts.`)) return;
+
+        const presets = loadPresetsFromStorage();
+        const preset = presets[name];
+        if (preset) {
+          localStorage.setItem("obsNinjaStreamMappings", JSON.stringify(preset.mappings || []));
+          localStorage.setItem("obsNinjaSceneLayoutConfigs", JSON.stringify(preset.layouts || []));
+          
+          loadStreamMappings();
+          loadLayoutConfigs();
+          
+          logMessage(`Loaded preset '${name}'`, "logMessages.presets.loaded", {name});
+        }
+      });
+
+      deletePresetBtn.addEventListener("click", () => {
+        const name = presetSelector.value;
+        if (!name) return;
+        
+        if (!confirm(`Are you sure you want to delete the preset '${name}'?`)) return;
+
+        const presets = loadPresetsFromStorage();
+        delete presets[name];
+        savePresetsToStorage(presets);
+        updatePresetSelector();
+        logMessage(`Deleted preset '${name}'`, "logMessages.presets.deleted", {name});
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        initializeApp();
+        updateLayoutConfigsListEmptyState();
+        updatePresetSelector();
       });
     </script>
   </body>
